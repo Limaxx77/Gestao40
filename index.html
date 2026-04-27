@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>40 Graus – Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body class="locked">
+
+<!-- LOGIN SCREEN -->
+<section class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="logo-title">40 Graus</div>
+      <div class="logo-sub">ACESSO ADMINISTRATIVO</div>
+      <p>Entre com seu usuário para acessar o sistema.</p>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Usuário</label>
+      <input class="form-input" id="login_user" placeholder="Ex: admin">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Senha</label>
+      <input class="form-input" id="login_pass" type="password" placeholder="Digite sua senha" onkeydown="if(event.key==='Enter') login()">
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="login()">Entrar no Sistema</button>
+
+    
+  </div>
+</section>
+
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-title">40 Graus</div>
+    <div class="logo-sub">Gestão</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active" onclick="switchTab('dashboard')">
+      <span class="nav-icon">📊</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="switchTab('salarios')">
+      <span class="nav-icon">👥</span> Salários
+    </div>
+    <div class="nav-item" onclick="switchTab('contas')">
+      <span class="nav-icon">📋</span> Contas & Boletos
+      <span class="nav-badge" id="alertBadge">0</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('scanner')">
+      <span class="nav-icon">📷</span> Escanear Boleto
+    </div>
+    <div class="nav-item" onclick="switchTab('relatorios')">
+      <span class="nav-icon">📈</span> Relatórios
+    </div>
+    <div class="nav-item admin-only" onclick="switchTab('acessos')">
+      <span class="nav-icon">🔐</span> Acessos
+    </div>
+  </nav>
+  <div class="sidebar-footer">v1.0 · 40 Graus Restaurante</div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="page-title" id="pageTitle">Dashboard</div>
+    <div class="topbar-right">
+      <span class="user-pill" id="currentUserLabel">Usuário</span>
+      <button class="btn btn-secondary btn-sm" onclick="logout()">Sair</button>
+      <button class="btn btn-icon" onclick="checkAlerts()" title="Verificar alertas">🔔</button>
+      <button class="btn btn-primary" id="addBtn" onclick="openAddModal()">＋ Adicionar</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ALERTS BAR -->
+    <div class="alerts-bar" id="alertsBar" style="display:none;">
+      <span class="alerts-icon">⚠️</span>
+      <div class="alerts-text" id="alertsContent"></div>
+    </div>
+
+    <!-- ======================== DASHBOARD ======================== -->
+    <div class="tab-panel active" id="tab-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card amber">
+          <div class="stat-label">Folha do Mês</div>
+          <div class="stat-value amber mono" id="dash-folha">R$ 0,00</div>
+          <div class="stat-sub" id="dash-folha-sub">0 funcionários</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Contas a Pagar</div>
+          <div class="stat-value red mono" id="dash-contas">R$ 0,00</div>
+          <div class="stat-sub" id="dash-contas-sub">0 pendentes</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Pagas este Mês</div>
+          <div class="stat-value green mono" id="dash-pagas">R$ 0,00</div>
+          <div class="stat-sub" id="dash-pagas-sub">0 quitadas</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">Vencendo em 7 dias</div>
+          <div class="stat-value blue mono" id="dash-vencendo">0</div>
+          <div class="stat-sub">boletos / contas</div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="chart-card">
+          <div class="chart-title">Gastos por Mês (últimos 6 meses)</div>
+          <div class="bar-chart" id="barChart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Distribuição de Gastos</div>
+          <div class="pie-placeholder"></div>
+          <div class="pie-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div><span>Contas Fixas (38%)</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div><span>Salários (27%)</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div><span>Fornecedores (17%)</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div><span>Outros (18%)</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Próximos Vencimentos</div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Descrição</th><th>Valor</th><th>Vencimento</th><th>Status</th></tr>
+          </thead>
+          <tbody id="dashVencimentos"><tr><td colspan="4" class="empty">Nenhum lançamento ainda.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ======================== SALÁRIOS ======================== -->
+    <div class="tab-panel" id="tab-salarios">
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stat-card amber">
+          <div class="stat-label">Total Folha</div>
+          <div class="stat-value amber mono" id="sal-total">R$ 0,00</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Pagos</div>
+          <div class="stat-value green mono" id="sal-pagos">0</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Pendentes</div>
+          <div class="stat-value red mono" id="sal-pendentes">0</div>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Funcionários</div>
+          <div class="table-actions">
+            <input class="search-box" placeholder="🔍 Buscar funcionário..." oninput="filterTable('salTable', this.value)">
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Nome</th><th>Cargo</th><th>Salário</th><th>Vencimento</th><th>Status</th><th>Ações</th></tr>
+          </thead>
+          <tbody id="salTable"><tr><td colspan="6" class="empty"><div class="empty-icon">👥</div>Nenhum funcionário cadastrado.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ======================== CONTAS ======================== -->
+    <div class="tab-panel" id="tab-contas">
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stat-card red">
+          <div class="stat-label">Total Pendente</div>
+          <div class="stat-value red mono" id="cont-pendente">R$ 0,00</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Vence Hoje/Semana</div>
+          <div class="stat-value amber mono" id="cont-semana">0</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Pagas este Mês</div>
+          <div class="stat-value green mono" id="cont-pagas">R$ 0,00</div>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Contas & Boletos</div>
+          <div class="table-actions">
+            <input class="search-box" placeholder="🔍 Buscar conta..." oninput="filterTable('contTable', this.value)">
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Descrição</th><th>Categoria</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Ações</th></tr>
+          </thead>
+          <tbody id="contTable"><tr><td colspan="6" class="empty"><div class="empty-icon">📋</div>Nenhuma conta cadastrada.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ======================== SCANNER ======================== -->
+    <div class="tab-panel" id="tab-scanner">
+      <div class="scanner-area" onclick="document.getElementById('fileInput').click()">
+        <div class="scanner-icon">📷</div>
+        <div class="scanner-text">
+          <strong>Clique para selecionar</strong> ou arraste a imagem do boleto<br>
+          <small>Formatos aceitos: JPG, PNG, PDF</small>
+        </div>
+        <input type="file" id="fileInput" accept="image/*,.pdf" style="display:none" onchange="handleScan(event)">
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Boletos Escaneados</div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Arquivo</th><th>Descrição</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Ações</th></tr>
+          </thead>
+          <tbody id="scanTable"><tr><td colspan="6" class="empty"><div class="empty-icon">📷</div>Nenhum boleto escaneado.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ======================== RELATÓRIOS ======================== -->
+    <div class="tab-panel" id="tab-relatorios">
+      <div class="stats-grid">
+        <div class="stat-card amber">
+          <div class="stat-label">Total Geral</div>
+          <div class="stat-value amber mono" id="rel-total">R$ 0,00</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Em Aberto</div>
+          <div class="stat-value red mono" id="rel-aberto">R$ 0,00</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Quitado</div>
+          <div class="stat-value green mono" id="rel-quitado">R$ 0,00</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">Atrasado</div>
+          <div class="stat-value blue mono" id="rel-atrasado">R$ 0,00</div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="chart-card">
+          <div class="chart-title">Contas por Categoria</div>
+          <div id="catReport" style="display:flex;flex-direction:column;gap:12px;margin-top:8px;"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Resumo Geral</div>
+          <div id="resumoReport" style="display:flex;flex-direction:column;gap:10px;margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button class="btn btn-secondary" onclick="exportCSV()">⬇️ Exportar CSV</button>
+        <button class="btn btn-secondary" onclick="printReport()">🖨️ Imprimir Relatório</button>
+      </div>
+    </div>
+
+
+
+    <!-- ======================== ACESSOS ======================== -->
+    <div class="tab-panel" id="tab-acessos">
+      <div class="access-grid">
+        <div class="access-card">
+          <h2 class="modal-title">Liberar novo acesso</h2>
+          <div class="form-group">
+            <label class="form-label">Nome</label>
+            <input class="form-input" id="acc_nome" placeholder="Nome da pessoa">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Usuário</label>
+            <input class="form-input" id="acc_user" placeholder="usuario.sem.espaco">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Senha</label>
+            <input class="form-input" id="acc_pass" type="password" placeholder="Senha de acesso">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Perfil</label>
+              <select class="form-input" id="acc_role">
+                <option value="user">Funcionário</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select class="form-input" id="acc_active">
+                <option value="true">Liberado</option>
+                <option value="false">Bloqueado</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="saveAccessUser()">Salvar acesso</button>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">Usuários liberados</div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Nome</th><th>Usuário</th><th>Perfil</th><th>Status</th><th>Ações</th></tr>
+            </thead>
+            <tbody id="accessTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- ====== MODAL SALÁRIO ====== -->
+<div class="modal-overlay" id="modalSalario">
+  <div class="modal">
+    <div class="modal-title" id="salModalTitle">Novo Funcionário</div>
+    <div class="form-group">
+      <label class="form-label">Nome Completo</label>
+      <input class="form-input" id="sal_nome" placeholder="Ex: João Silva">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Cargo</label>
+        <input class="form-input" id="sal_cargo" placeholder="Ex: Garçom">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Salário (R$)</label>
+        <input class="form-input" id="sal_salario" type="number" placeholder="0.00">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Data Pagamento</label>
+        <input class="form-input" id="sal_data" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-input" id="sal_status">
+          <option value="Pendente">Pendente</option>
+          <option value="Pago">Pago</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalSalario')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveSalario()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL CONTA ====== -->
+<div class="modal-overlay" id="modalConta">
+  <div class="modal">
+    <div class="modal-title" id="contModalTitle">Nova Conta / Boleto</div>
+    <div class="form-group">
+      <label class="form-label">Descrição</label>
+      <input class="form-input" id="cont_desc" placeholder="Ex: Conta de Luz – Maio">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Categoria</label>
+        <select class="form-input" id="cont_cat">
+          <option>Energia</option>
+          <option>Água</option>
+          <option>Internet</option>
+          <option>Aluguel</option>
+          <option>Fornecedor</option>
+          <option>Boleto Bancário</option>
+          <option>Imposto</option>
+          <option>Outros</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Valor (R$)</label>
+        <input class="form-input" id="cont_valor" type="number" placeholder="0.00">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Vencimento</label>
+        <input class="form-input" id="cont_venc" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-input" id="cont_status">
+          <option value="Pendente">Pendente</option>
+          <option value="Pago">Pago</option>
+          <option value="Atrasado">Atrasado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Código de Barras (opcional)</label>
+      <input class="form-input" id="cont_barcode" placeholder="00000.00000 00000.000000 00000.000000 0 00000000000000">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalConta')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveConta()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL SCANNER MANUAL ====== -->
+<div class="modal-overlay" id="modalScanner">
+  <div class="modal">
+    <div class="modal-title">Confirmar Boleto Escaneado</div>
+    <div class="form-group">
+      <label class="form-label">Arquivo</label>
+      <input class="form-input" id="sc_arquivo" readonly>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descrição</label>
+      <input class="form-input" id="sc_desc" placeholder="Descreva o boleto">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Valor (R$)</label>
+        <input class="form-input" id="sc_valor" type="number" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Vencimento</label>
+        <input class="form-input" id="sc_venc" type="date">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalScanner')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmScan()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
